@@ -26,8 +26,7 @@ We're recommending Amazon Lightsail for this project. If you prefer, you can use
 There are a few things you need to do when you create your server instance.
 
 1. Log in!
-First, log in to Lightsail. If you don't already have an Amazon Web Services account, you'll be prompted to create one.
-Amazon Web Services login page
+First, log in to Lightsail. If you don't already have an Amazon Web Services account, you'll be prompted to create one
 Amazon Web Services login page.
 2. Create an instance.
 Once you're logged in, Lightsail will give you a friendly message with a robot on it, prompting you to create an instance. A Lightsail instance is a Linux server running on a virtual machine inside an Amazon datacenter.
@@ -78,103 +77,160 @@ Now that you have a working instance, you can get right into the project!
 1. Update all installed packages.
 Using SSH connecting on light sail UI to ssh into the server.
 To update the packages:
+
 sudo apt update
+
 sudo apt upgrade
 
 2. Change SSH port from 22 to 2200. Configure the lightsail firewall.
+
 You need to configure the sshd_config under etc/ssh/
+
 sudo nano /etc/ssh/sshd_config
+
 to edit the port number under the file.
 
 3. Configure fire wll in server and lightsail services.
+
 Use following commands to configure the server.
+
 sudo ufw default deny incoming
+
 sudo ufw default allow outgoing
+
 sudo ufw limit 2200/tcp
+
 sudo ufw allow 80/tcp
+
 sudo ufw allow 123/udp
+
 sudo ufw enable
 
 And in networking part in lightsail, edit the Firewall part.
+
 click add another to add custom application, TCP protocol and port range to the needed port: 123, 2200, 80.
 
 Mention if you have made it right, the default ssh connection on the lightsail UI should not lead you to the ternimal.
+
 Because the SSH default port 22 have been blocked.
 
 ### 3. Add a grader access.
 1. create a grader user.
+
 sudo adduser grader
+
 Have to set password here. I set grader as the password. But will use auth so it doesnt matter.
 
 2. give grader permission to sudo.
+
 sudo usermod -aG sudo grader
 
 3. Create an SSH key pair for grader using the ssh-keygen tool
+
 first in local machine. Use ssh-keygen to generate key pair.
+
 Locate to /.ssh/ directory under the user name directory.
+
 For me:
+
 cd /User/wang8zai/.ssh/
+
 After this use:
+
 ssh-keygen -t rsa
+
 generate the key pair. should get a pair of files.
+
 Like key and key.pub
+
 key is used as private key on local machine and key.pub is used to store on the server.
 
 You need to add the grader public key which means key.pub here to the server.
 
+
 sudo mkdir /home/grader/.ssh
+
 sudo chown grader:grader /home/grader/.ssh # changing ownership of .ssh to grader
+
 sudo chmod 700 /home/grader/.ssh           # change folder permission
+
 sudo cp /home/ubuntu/.ssh/authorized_keys /home/grader/.ssh/
+
 sudo chmod 644 /home/grader/.ssh/authorized_keys
 
 Set the permission to the folder and file.
+
 And the public key is stored in the authorized_keys.
 
 To log in as grader.
+
 sudo ssh -i ~/.ssh/key grader@18.222.21.107 -p 2200
+
 ~/.ssh/key is the private key and grader is the user name , and then ip address. 2200 the port number.
 
 ### 4. Prepare to deploy your project.
+
 9. Configure the local timezone to UTC.
+
 Simple search.
+
 sudo timedatectl set-timezone UTC
 
 10. Install and configure Apache to serve a Python mod_wsgi application.
+
 Install dependencies.
+
 sudo apt-get install apache2 libapache2-mod-wsgi
 
 11. Install and configure PostgreSQL:
+
 1. install postgres:
+
 sudo apt-get install postgresql
+
 2. configure:
 
 Add a user called catalog with password catalog
+
 build a db along with this catalog user.
+
 sudo -u postgres
+
 psql
 create user catalog with password 'catalog';
+
 create database catalog owner catalog;
+
 \q
+
 exit
 
 12. Install git.
+
 sudo apt-get install git
 
 ### 5. Deploy the Item Catalog project.
 13. Clone and setup your Item Catalog project from the Github repository you created earlier in this Nanodegree program.
+
 clone to server:
 sudo git clone https://github.com/wang8zai/fullstack-nanodegree-vm /var/www
 
-14. Set it up in your server so that it functions correctly when visiting your server’s IP address in a browser. Make sure that your .git directory is not publicly accessible via a browser!
+
+14. Set it up in your server so that it functions correctly when visiting your server’s IP address in a browser. Make sure
+that your .git directory is not publicly accessible via a browser!
+
 To specify: my main python file is here:
+
 /var/www/fullstack-nanodegree-vm/vagrant/catalog/webserver.py
 
 Need to add a .wsgi file under ../vagrant/project.wsgi
+
 And this project.wsji is directed by the 000-default.conf under:
+
 /etc/apache2/sites-enabled/000-default.conf
 
 Need to update 000-default.conf.
+
 Update to something like this:
 <VirtualHost *:80>
 	# The ServerName directive sets the request scheme, hostname and port that
@@ -235,23 +291,36 @@ logging.basicConfig(stream=sys.stderr)
 sys.path.insert(0,"/var/www/fullstack-nanodegree-vm/vagrant/catalog")
 
 from webserver import app as application
+
 application.secret_key = 'secretkey'
 
 ### 6. Other modifications:
 To change to postgres:
+
 engine = create_engine('postgresql://catalog:catalog@localhost/catalog')
+
 the first catalog is the user name. Second password. third db name.
+
 Actually to change from sqlite to postgresql the very much work you need to do is the above change.
+
 Also mention postgresql does not support same thread. So get rid of that.
 
 ### 7. Some other settings:
+
 Need to make all dependency work.
+
 sudo pip install Flask
+
 sudo pip install httplib2
+
 sudo pip install requests
+
 sudo pip install oauth2client
+
 sudo pip install sqlalchemy
+
 And for me I also added a -H there. 
+
 Ex. sudo -H pip install Flask
 
 ## Some other points.
