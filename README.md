@@ -223,23 +223,28 @@ Should test this directory works or not by visit the public IP address with a fu
 Finally, we can update the wsgi file to:
 
 #!/usr/bin/python
+
 import sys
+
 import logging
+
 logging.basicConfig(stream=sys.stderr)
+
 #specify the path of the files.
+
 sys.path.insert(0,"/var/www/fullstack-nanodegree-vm/vagrant/catalog")
 
 from webserver import app as application
 application.secret_key = 'secretkey'
 
-15. Other modifications:
-1. To change to postgres:
+### 6. Other modifications:
+To change to postgres:
 engine = create_engine('postgresql://catalog:catalog@localhost/catalog')
 the first catalog is the user name. Second password. third db name.
 Actually to change from sqlite to postgresql the very much work you need to do is the above change.
 Also mention postgresql does not support same thread. So get rid of that.
 
-16. Some other settings:
+### 7. Some other settings:
 Need to make all dependency work.
 sudo pip install Flask
 sudo pip install httplib2
